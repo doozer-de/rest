@@ -1,3 +1,4 @@
+// Based on [https://github.com/martini-contrib/cors](https://github.com/martini-contrib/cors)
 package rest
 
 import (
@@ -10,30 +11,30 @@ import (
 	"golang.org/x/net/context"
 )
 
-type HttpHeaderGuardRecorder struct {
+type HTTPHeaderGuardRecorder struct {
 	*httptest.ResponseRecorder
 	savedHeaderMap http.Header
 }
 
-func NewRecorder() *HttpHeaderGuardRecorder {
-	return &HttpHeaderGuardRecorder{httptest.NewRecorder(), nil}
+func NewRecorder() *HTTPHeaderGuardRecorder {
+	return &HTTPHeaderGuardRecorder{httptest.NewRecorder(), nil}
 }
 
-func (gr *HttpHeaderGuardRecorder) WriteHeader(code int) {
+func (gr *HTTPHeaderGuardRecorder) WriteHeader(code int) {
 	gr.ResponseRecorder.WriteHeader(code)
 	gr.savedHeaderMap = gr.ResponseRecorder.Header()
 }
 
-func (gr *HttpHeaderGuardRecorder) Header() http.Header {
+func (gr *HTTPHeaderGuardRecorder) Header() http.Header {
 	if gr.savedHeaderMap != nil {
 		clone := make(http.Header)
 		for k, v := range gr.savedHeaderMap {
 			clone[k] = v
 		}
 		return clone
-	} else {
-		return gr.ResponseRecorder.Header()
 	}
+
+	return gr.ResponseRecorder.Header()
 }
 
 func AHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
@@ -43,7 +44,7 @@ func AHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 func TestAllowAll(t *testing.T) {
 	recorder := httptest.NewRecorder()
 
-	s := New(RestConfiguration{CORS: true}, nil)
+	s := New(Configuration{CORS: true}, nil)
 	r, _ := http.NewRequest("GET", "path", nil)
 
 	s.ServeHTTP(recorder, r)
@@ -59,7 +60,7 @@ func TestAllowRegexMatch(t *testing.T) {
 		AllowOrigins: []string{"https://abc.org", "https://*.cs.com"},
 	}
 
-	s := New(RestConfiguration{CORS: true, CORSOptions: opt}, nil)
+	s := New(Configuration{CORS: true, CORSOptions: opt}, nil)
 
 	origin := "https://bar.cs.com"
 	r, _ := http.NewRequest("GET", "cs", nil)
@@ -79,7 +80,7 @@ func TestAllowRegexNoMatch(t *testing.T) {
 		AllowOrigins: []string{"https://*.cs.com"},
 	}
 
-	s := New(RestConfiguration{CORS: true, CORSOptions: opt}, nil)
+	s := New(Configuration{CORS: true, CORSOptions: opt}, nil)
 
 	origin := "https://ww.boese.com.evil.com"
 	r, _ := http.NewRequest("PUT", "cs", nil)
@@ -103,7 +104,7 @@ func TestHeaders(t *testing.T) {
 		MaxAge:           5 * time.Minute,
 	}
 
-	s := New(RestConfiguration{CORS: true, CORSOptions: opt}, nil)
+	s := New(Configuration{CORS: true, CORSOptions: opt}, nil)
 
 	r, _ := http.NewRequest("PUT", "foo", nil)
 	s.ServeHTTP(recorder, r)
@@ -141,7 +142,7 @@ func TestDefaultAllowHeaders(t *testing.T) {
 		AllowAllOrigins: true,
 	}
 
-	s := New(RestConfiguration{CORS: true, CORSOptions: opt}, nil)
+	s := New(Configuration{CORS: true, CORSOptions: opt}, nil)
 
 	r, _ := http.NewRequest("PUT", "foo", nil)
 	s.ServeHTTP(recorder, r)
@@ -160,7 +161,7 @@ func TestPreflight(t *testing.T) {
 		AllowHeaders:    []string{"Origin", "X-whatever", "X-CaseSensitive"},
 	}
 
-	s := New(RestConfiguration{CORS: true, CORSOptions: opt}, nil)
+	s := New(Configuration{CORS: true, CORSOptions: opt}, nil)
 
 	s.Options("foo", func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(500)

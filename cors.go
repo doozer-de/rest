@@ -1,3 +1,4 @@
+// Based on [https://github.com/martini-contrib/cors](https://github.com/martini-contrib/cors)
 package rest
 
 import (
@@ -28,7 +29,7 @@ var (
 	allowOriginPatterns = []string{}
 )
 
-// Options represents the available CORS options
+// CORSOptions represents the available CORS options
 type CORSOptions struct {
 	// If set, all origins are allowed.
 	AllowAllOrigins bool
@@ -46,6 +47,7 @@ type CORSOptions struct {
 	MaxAge time.Duration
 }
 
+// DefaultCORSOptions creates new options, allows all origins and returns them.
 func DefaultCORSOptions() *CORSOptions {
 	return &CORSOptions{
 		AllowAllOrigins: true,
@@ -72,7 +74,6 @@ func (o *CORSOptions) Header(origin string) (headers map[string]string) {
 	}
 
 	if len(o.AllowHeaders) > 0 {
-		// TODO(cs): Add default headers
 		headers[headerAllowHeaders] = strings.Join(o.AllowHeaders, ",")
 	}
 
@@ -167,7 +168,7 @@ func NewCORS(opts *CORSOptions) ContextHandler {
 
 		if r.Method == "OPTIONS" &&
 			(requestedMethod != "" || requestedHeaders != "") {
-			// TODO(cs): if preflight, respond with exact headers if allowed
+			// TODO: if preflight, respond with exact headers if allowed
 			headers = opts.PreflightHeader(origin, requestedMethod, requestedHeaders)
 			for key, value := range headers {
 				w.Header().Set(key, value)

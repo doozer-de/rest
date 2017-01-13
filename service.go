@@ -1,4 +1,4 @@
-// Copyright (c) 2016 Christoph Seufert, Inc.
+// Copyright (c) 2016 Christoph Seufert
 
 package rest
 
@@ -11,8 +11,8 @@ import (
 	"strings"
 )
 
-// PARAMS it the key under which the Params of the Router will be written to the context
-const PARAMS = "PARAMS"
+// paramsKey defines context paramteters key
+type paramsKey struct{}
 
 // GRPCRESTService implements a HTTP Router + Some Helpers for chaining and error handling. It is used for the GRPC-REST Gateway
 type GRPCRESTService struct {
@@ -27,8 +27,8 @@ type GRPCRESTService struct {
 	corsOptions     *CORSOptions
 }
 
-// RestConfiguration container the configuration Parameter needed to initialize the GRPCRESTService
-type RestConfiguration struct {
+// Configuration container the configuration Parameter needed to initialize the GRPCRESTService
+type Configuration struct {
 	// BaseURI can prefix the path for this handler. A common example for REST would be the version like "/v1"
 	BaseURI string
 	//ErrorHandler will be called in the middlewares and the framework if an error occurs. If not present the DefaultErrorHandler will be used
@@ -42,7 +42,7 @@ type RestConfiguration struct {
 }
 
 // New created a new GRPCRESTServices and applies the configuration and register the handlers given by the registrators
-func New(cfg RestConfiguration, registrators []HandlerRegistration) *GRPCRESTService {
+func New(cfg Configuration, registrators []HandlerRegistration) *GRPCRESTService {
 	s := &GRPCRESTService{
 		baseURI:         path.Join("/", cfg.BaseURI, "/"),
 		routes:          map[string]*node{},
@@ -101,7 +101,7 @@ func (s *GRPCRESTService) Register(r []Register, baseURI string) error {
 	return nil
 }
 
-// ServeHTTP is there to fulfill http.Handler interface, other then that the framework uses the libs.ContextHandler as the signature
+// ServeHTTP implements http.Handler interface, other then that the framework uses the ContextHandler as the signature
 func (s *GRPCRESTService) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.ServeWithContext(context.Background(), w, r)
 }
@@ -126,7 +126,7 @@ func (s *GRPCRESTService) ServeWithContext(c context.Context, w http.ResponseWri
 	if ok {
 		h, ps, _ = n.getValue(r.URL.Path)
 
-		c = context.WithValue(c, "params", ps)
+		c = context.WithValue(c, paramsKey{}, ps)
 	}
 
 	if h == nil {
@@ -136,10 +136,14 @@ func (s *GRPCRESTService) ServeWithContext(c context.Context, w http.ResponseWri
 			http.NotFoundHandler().ServeHTTP(w, r)
 		}
 	} else {
-		c = context.WithValue(c, PARAMS, ps)
+		c = context.WithValue(c, paramsKey{}, ps)
 
 		h(c, w, r)
 	}
+}
+
+func GetParams(ctx context.Context) Params {
+	return ctx.Value(paramsKey{}).(Params)
 }
 
 // Route registers a handler for certain http method/route
@@ -185,6 +189,7 @@ func (s *GRPCRESTService) Head(uri string, handler ContextHandler) {
 	s.Route("HEAD", uri, handler)
 }
 
+// Options registers a handler for OPTIONS and the given uri
 func (s *GRPCRESTService) Options(uri string, handler ContextHandler) {
 	s.Route("OPTIONS", uri, handler)
 }
