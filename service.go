@@ -14,8 +14,8 @@ import (
 // paramsKey defines context paramteters key
 type paramsKey struct{}
 
-// GRPCRESTService implements a HTTP Router + Some Helpers for chaining and error handling. It is used for the GRPC-REST Gateway
-type GRPCRESTService struct {
+// Service implements a HTTP Router + Some Helpers for chaining and error handling. It is used for the GRPC-REST Gateway
+type Service struct {
 	routes          map[string]*node
 	preChain        []ContextHandler
 	chain           []Middleware
@@ -42,8 +42,8 @@ type Configuration struct {
 }
 
 // New created a new GRPCRESTServices and applies the configuration and register the handlers given by the registrators
-func New(cfg Configuration, registrators []HandlerRegistration) *GRPCRESTService {
-	s := &GRPCRESTService{
+func New(cfg Configuration, registrators []HandlerRegistration) *Service {
+	s := &Service{
 		baseURI:         path.Join("/", cfg.BaseURI, "/"),
 		routes:          map[string]*node{},
 		trimSlash:       true,
@@ -83,7 +83,7 @@ func New(cfg Configuration, registrators []HandlerRegistration) *GRPCRESTService
 }
 
 // Register registers a list of handers/paths/methods wrapping them in the middleware chain
-func (s *GRPCRESTService) Register(r []Register, baseURI string) error {
+func (s *Service) Register(r []Register, baseURI string) error {
 	for _, r := range r {
 		h := r.Handler
 
@@ -102,12 +102,12 @@ func (s *GRPCRESTService) Register(r []Register, baseURI string) error {
 }
 
 // ServeHTTP implements http.Handler interface, other then that the framework uses the ContextHandler as the signature
-func (s *GRPCRESTService) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.ServeWithContext(context.Background(), w, r)
 }
 
 // ServeWithContext is the Entrypoint for an request.
-func (s *GRPCRESTService) ServeWithContext(c context.Context, w http.ResponseWriter, r *http.Request) {
+func (s *Service) ServeWithContext(c context.Context, w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
 	if r.URL.Path != "/" && s.trimSlash {
@@ -147,7 +147,7 @@ func GetParams(ctx context.Context) Params {
 }
 
 // Route registers a handler for certain http method/route
-func (s *GRPCRESTService) Route(method, uri string, handler ContextHandler) error {
+func (s *Service) Route(method, uri string, handler ContextHandler) error {
 	h := ToContextHandler(handler)
 
 	if n := s.routes[method]; n == nil {
@@ -160,36 +160,36 @@ func (s *GRPCRESTService) Route(method, uri string, handler ContextHandler) erro
 }
 
 // Get registers a handler for GET and the given uri
-func (s *GRPCRESTService) Get(uri string, handler ContextHandler) {
+func (s *Service) Get(uri string, handler ContextHandler) {
 	s.Route("GET", uri, handler)
 }
 
 // Post registers a handler for POST and the given uri
-func (s *GRPCRESTService) Post(uri string, handler ContextHandler) {
+func (s *Service) Post(uri string, handler ContextHandler) {
 	s.Route("POST", uri, handler)
 }
 
 // Put registers a handler for PUT and the given uri
-func (s *GRPCRESTService) Put(uri string, handler ContextHandler) {
+func (s *Service) Put(uri string, handler ContextHandler) {
 	s.Route("PUT", uri, handler)
 }
 
 // Delete registers a handler for DELETE and the given uri
-func (s *GRPCRESTService) Delete(uri string, handler ContextHandler) {
+func (s *Service) Delete(uri string, handler ContextHandler) {
 	s.Route("DELETE", uri, handler)
 }
 
 // Patch registers a handler for PATCH and the given uri
-func (s *GRPCRESTService) Patch(uri string, handler ContextHandler) {
+func (s *Service) Patch(uri string, handler ContextHandler) {
 	s.Route("PATCH", uri, handler)
 }
 
 // Head registers a handler for HEAD and the given uri
-func (s *GRPCRESTService) Head(uri string, handler ContextHandler) {
+func (s *Service) Head(uri string, handler ContextHandler) {
 	s.Route("HEAD", uri, handler)
 }
 
 // Options registers a handler for OPTIONS and the given uri
-func (s *GRPCRESTService) Options(uri string, handler ContextHandler) {
+func (s *Service) Options(uri string, handler ContextHandler) {
 	s.Route("OPTIONS", uri, handler)
 }
