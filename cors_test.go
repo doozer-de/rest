@@ -45,7 +45,7 @@ func TestAllowAll(t *testing.T) {
 	recorder := httptest.NewRecorder()
 
 	s := New(Configuration{CORS: true}, nil)
-	r, _ := http.NewRequest("GET", "path", nil)
+	r, _ := http.NewRequest(http.MethodGet, "path", nil)
 
 	s.ServeHTTP(recorder, r)
 
@@ -63,7 +63,7 @@ func TestAllowRegexMatch(t *testing.T) {
 	s := New(Configuration{CORS: true, CORSOptions: opt}, nil)
 
 	origin := "https://bar.cs.com"
-	r, _ := http.NewRequest("GET", "cs", nil)
+	r, _ := http.NewRequest(http.MethodGet, "cs", nil)
 	r.Header.Add("Origin", origin)
 	s.ServeHTTP(recorder, r)
 
@@ -83,7 +83,7 @@ func TestAllowRegexNoMatch(t *testing.T) {
 	s := New(Configuration{CORS: true, CORSOptions: opt}, nil)
 
 	origin := "https://ww.boese.com.evil.com"
-	r, _ := http.NewRequest("PUT", "cs", nil)
+	r, _ := http.NewRequest(http.MethodPut, "cs", nil)
 	r.Header.Add("Origin", origin)
 	s.ServeHTTP(recorder, r)
 
@@ -98,7 +98,7 @@ func TestHeaders(t *testing.T) {
 	opt := &CORSOptions{
 		AllowAllOrigins:  true,
 		AllowCredentials: true,
-		AllowMethods:     []string{"PATCH", "GET"},
+		AllowMethods:     []string{http.MethodPatch, http.MethodGet},
 		AllowHeaders:     []string{"Origin", "X-whatever"},
 		ExposeHeaders:    []string{"Content-Length", "Hello"},
 		MaxAge:           5 * time.Minute,
@@ -106,7 +106,7 @@ func TestHeaders(t *testing.T) {
 
 	s := New(Configuration{CORS: true, CORSOptions: opt}, nil)
 
-	r, _ := http.NewRequest("PUT", "foo", nil)
+	r, _ := http.NewRequest(http.MethodPut, "foo", nil)
 	s.ServeHTTP(recorder, r)
 
 	credentialsVal := recorder.HeaderMap.Get(headerAllowCredentials)
@@ -144,7 +144,7 @@ func TestDefaultAllowHeaders(t *testing.T) {
 
 	s := New(Configuration{CORS: true, CORSOptions: opt}, nil)
 
-	r, _ := http.NewRequest("PUT", "foo", nil)
+	r, _ := http.NewRequest(http.MethodPut, "foo", nil)
 	s.ServeHTTP(recorder, r)
 
 	headersVal := recorder.HeaderMap.Get(headerAllowHeaders)
@@ -157,7 +157,7 @@ func TestPreflight(t *testing.T) {
 	recorder := NewRecorder()
 	opt := &CORSOptions{
 		AllowAllOrigins: true,
-		AllowMethods:    []string{"PUT", "PATCH"},
+		AllowMethods:    []string{http.MethodPut, http.MethodPatch},
 		AllowHeaders:    []string{"Origin", "X-whatever", "X-CaseSensitive"},
 	}
 
@@ -167,8 +167,8 @@ func TestPreflight(t *testing.T) {
 		w.WriteHeader(500)
 	})
 
-	r, _ := http.NewRequest("OPTIONS", "foo", nil)
-	r.Header.Add(headerRequestMethod, "PUT")
+	r, _ := http.NewRequest(http.MethodOptions, "foo", nil)
+	r.Header.Add(headerRequestMethod, http.MethodPut)
 	r.Header.Add(headerRequestHeaders, "X-whatever, x-casesensitive")
 	s.ServeHTTP(recorder, r)
 

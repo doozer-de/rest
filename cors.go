@@ -166,7 +166,7 @@ func NewCORS(opts *CORSOptions) ContextHandler {
 			headers          map[string]string
 		)
 
-		if r.Method == "OPTIONS" &&
+		if r.Method == http.MethodOptions &&
 			(requestedMethod != "" || requestedHeaders != "") {
 			// TODO: if preflight, respond with exact headers if allowed
 			headers = opts.PreflightHeader(origin, requestedMethod, requestedHeaders)

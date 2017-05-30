@@ -17,7 +17,7 @@ type paramsKey struct{}
 // Service implements a HTTP Router + Some Helpers for chaining and error handling. It is used for the GRPC-REST Gateway
 type Service struct {
 	routes          map[string]*node
-	preChain        []ContextHandler
+	optionsChain    []ContextHandler
 	chain           []Middleware
 	notFoundHandler ErrorHandler // The Route could not be found
 	errorHandler    ErrorHandler // Handle errors in general. We expected the DError and the data in the context
@@ -76,7 +76,7 @@ func New(cfg Configuration, registrators []HandlerRegistration) *Service {
 		if o == nil {
 			o = DefaultCORSOptions()
 		}
-		s.preChain = append(s.preChain, NewCORS(o))
+		s.optionsChain = append(s.optionsChain, NewCORS(o))
 	}
 
 	return s
@@ -114,8 +114,11 @@ func (s *Service) ServeWithContext(c context.Context, w http.ResponseWriter, r *
 		r.URL.Path = strings.TrimRight(r.URL.Path, "/")
 	}
 
-	for _, p := range s.preChain {
+	for _, p := range s.optionsChain {
 		p(c, w, r)
+	}
+	if r.Method == http.MethodOptions {
+		return
 	}
 
 	var h ContextHandler
@@ -161,35 +164,35 @@ func (s *Service) Route(method, uri string, handler ContextHandler) error {
 
 // Get registers a handler for GET and the given uri
 func (s *Service) Get(uri string, handler ContextHandler) {
-	s.Route("GET", uri, handler)
+	s.Route(http.MethodGet, uri, handler)
 }
 
 // Post registers a handler for POST and the given uri
 func (s *Service) Post(uri string, handler ContextHandler) {
-	s.Route("POST", uri, handler)
+	s.Route(http.MethodPost, uri, handler)
 }
 
 // Put registers a handler for PUT and the given uri
 func (s *Service) Put(uri string, handler ContextHandler) {
-	s.Route("PUT", uri, handler)
+	s.Route(http.MethodPut, uri, handler)
 }
 
 // Delete registers a handler for DELETE and the given uri
 func (s *Service) Delete(uri string, handler ContextHandler) {
-	s.Route("DELETE", uri, handler)
+	s.Route(http.MethodDelete, uri, handler)
 }
 
 // Patch registers a handler for PATCH and the given uri
 func (s *Service) Patch(uri string, handler ContextHandler) {
-	s.Route("PATCH", uri, handler)
+	s.Route(http.MethodPatch, uri, handler)
 }
 
 // Head registers a handler for HEAD and the given uri
 func (s *Service) Head(uri string, handler ContextHandler) {
-	s.Route("HEAD", uri, handler)
+	s.Route(http.MethodHead, uri, handler)
 }
 
 // Options registers a handler for OPTIONS and the given uri
 func (s *Service) Options(uri string, handler ContextHandler) {
-	s.Route("OPTIONS", uri, handler)
+	s.Route(http.MethodOptions, uri, handler)
 }
