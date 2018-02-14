@@ -1,10 +1,9 @@
 package rest
 
 import (
+	"context"
 	"net/http"
 	"sort"
-
-	"golang.org/x/net/context"
 )
 
 // ContextHandler provides an interface to read and/or manipulates the context.

@@ -1,9 +1,8 @@
 package rest
 
 import (
+	"context"
 	"net/http"
-
-	"golang.org/x/net/context"
 )
 
 // DefaultErrorHandler is a default implementation of an Error Handler taken by the service framework.

@@ -2,13 +2,12 @@
 package rest
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
-
-	"golang.org/x/net/context"
 )
 
 type HTTPHeaderGuardRecorder struct {

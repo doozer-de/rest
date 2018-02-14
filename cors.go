@@ -2,13 +2,12 @@
 package rest
 
 import (
+	"context"
 	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
-
-	"golang.org/x/net/context"
 )
 
 const (
