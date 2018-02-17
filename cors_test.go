@@ -2,7 +2,6 @@
 package rest
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -36,7 +35,7 @@ func (gr *HTTPHeaderGuardRecorder) Header() http.Header {
 	return gr.ResponseRecorder.Header()
 }
 
-func AHandler(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+func AHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
@@ -162,9 +161,9 @@ func TestPreflight(t *testing.T) {
 
 	s := New(Configuration{CORS: true, CORSOptions: opt}, nil)
 
-	s.Options("foo", func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	s.Options("foo", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(500)
-	})
+	}))
 
 	r, _ := http.NewRequest(http.MethodOptions, "foo", nil)
 	r.Header.Add(headerRequestMethod, http.MethodPut)

@@ -2,7 +2,6 @@
 package rest
 
 import (
-	"context"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -145,7 +144,7 @@ func (o *CORSOptions) IsOriginAllowed(origin string) (allowed bool) {
 }
 
 // NewCORS enables CORS for requests those match the provided options.
-func NewCORS(opts *CORSOptions) ContextHandler {
+func NewCORS(opts *CORSOptions) http.HandlerFunc {
 	if len(opts.AllowHeaders) == 0 {
 		opts.AllowHeaders = defaultAllowHeaders
 	}
@@ -157,7 +156,7 @@ func NewCORS(opts *CORSOptions) ContextHandler {
 		allowOriginPatterns = append(allowOriginPatterns, "^"+pattern+"$")
 	}
 
-	return func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		var (
 			origin           = r.Header.Get(headerOrigin)
 			requestedMethod  = r.Header.Get(headerRequestMethod)

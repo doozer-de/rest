@@ -1,58 +1,21 @@
 package rest
 
 import (
-	"context"
 	"net/http"
 	"sort"
 )
 
-// ContextHandler provides an interface to read and/or manipulates the context.
-type ContextHandler func(context.Context, http.ResponseWriter, *http.Request)
-
 // Middleware is an interface to concatenate functions to chains.
-type Middleware func(ContextHandler) ContextHandler
-
-// ServeWithContext handles a request withoutd a given context.
-func (h ContextHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	h(nil, w, r)
-}
-
-// ServeWithContext handles a request with a given context.
-func (h ContextHandler) ServeWithContext(c context.Context, w http.ResponseWriter, r *http.Request) {
-	h(c, w, r)
-}
-
-// ToContextHandler converts a given handler into a ContextHandler.
-func ToContextHandler(f interface{}) ContextHandler {
-	var h ContextHandler
-
-	switch f.(type) {
-	case func(context.Context, http.ResponseWriter, *http.Request):
-		h = ContextHandler(f.(func(context.Context, http.ResponseWriter, *http.Request)))
-	case ContextHandler:
-		h = f.(ContextHandler)
-	case func(http.ResponseWriter, *http.Request):
-		h = func(c context.Context, w http.ResponseWriter, r *http.Request) {
-			f.(func(http.ResponseWriter, *http.Request))(w, r)
-		}
-	default:
-		if h, ok := f.(http.Handler); ok {
-			return ToContextHandler(h.ServeHTTP)
-		}
-		panic("Unsupported Handler")
-	}
-
-	return h
-}
+type Middleware func(http.Handler) http.Handler
 
 // ErrorHandler is an interface to provide error handling.
-type ErrorHandler func(ctx context.Context, w http.ResponseWriter, r *http.Request, err error)
+type ErrorHandler func(w http.ResponseWriter, r *http.Request, err error)
 
 // Register wraps a method, a path and a handler.
 type Register struct {
 	Method  string
 	Path    string
-	Handler func(context.Context, http.ResponseWriter, *http.Request)
+	Handler http.Handler
 }
 
 // HandlerRegistration provides methods neccessary to register routes and handlers.

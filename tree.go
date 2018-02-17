@@ -6,6 +6,7 @@
 package rest
 
 import (
+	"net/http"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -48,7 +49,7 @@ type node struct {
 	maxParams uint8
 	indices   string
 	children  []*node
-	handle    ContextHandler
+	handle    http.Handler
 	priority  uint32
 }
 
@@ -80,7 +81,7 @@ func (n *node) incrementChildPrio(pos int) int {
 
 // addRoute adds a node with the given handle to the path.
 // Not concurrency-safe!
-func (n *node) addRoute(path string, handle ContextHandler) {
+func (n *node) addRoute(path string, handle http.Handler) {
 	fullPath := path
 	n.priority++
 	numParams := countParams(path)
@@ -203,7 +204,7 @@ func (n *node) addRoute(path string, handle ContextHandler) {
 	}
 }
 
-func (n *node) insertChild(numParams uint8, path, fullPath string, handle ContextHandler) {
+func (n *node) insertChild(numParams uint8, path, fullPath string, handle http.Handler) {
 	var offset int // already handled bytes of the path
 
 	// find prefix until first wildcard (beginning with ':'' or '*'')
@@ -321,7 +322,7 @@ func (n *node) insertChild(numParams uint8, path, fullPath string, handle Contex
 // If no handle can be found, a TSR (trailing slash redirect) recommendation is
 // made if a handle exists with an extra (without the) trailing slash for the
 // given path.
-func (n *node) getValue(path string) (handle ContextHandler, p Params, tsr bool) {
+func (n *node) getValue(path string) (handle http.Handler, p Params, tsr bool) {
 walk: // outer loop for walking the tree
 	for {
 		if len(path) > len(n.path) {
