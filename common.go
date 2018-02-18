@@ -6,7 +6,7 @@ import (
 )
 
 // Middleware is an interface to concatenate functions to chains.
-type Middleware func(http.Handler) http.Handler
+type Middleware func(http.HandlerFunc) http.HandlerFunc
 
 // ErrorHandler is an interface to provide error handling.
 type ErrorHandler func(w http.ResponseWriter, r *http.Request, err error)
@@ -15,7 +15,7 @@ type ErrorHandler func(w http.ResponseWriter, r *http.Request, err error)
 type Register struct {
 	Method  string
 	Path    string
-	Handler http.Handler
+	Handler http.HandlerFunc
 }
 
 // HandlerRegistration provides methods neccessary to register routes and handlers.

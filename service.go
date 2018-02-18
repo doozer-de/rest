@@ -88,7 +88,7 @@ func (s *Service) Register(r []Register, baseURI string) error {
 		h := r.Handler
 
 		for i := len(s.chain) - 1; i >= 0; i-- {
-			h = s.chain[i](h)
+			h = s.chain[i](h).ServeHTTP
 		}
 
 		route := path.Join(baseURI, r.Path)
