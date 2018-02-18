@@ -117,25 +117,25 @@ func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var handler http.Handler
-	var params Params
+	var h http.Handler
+	var ps Params
 
 	n, ok := s.routes[r.Method]
 
 	if ok {
-		handler, params, _ = n.getValue(r.URL.Path)
-		ctx = context.WithValue(ctx, paramsKey{}, params)
+		h, ps, _ = n.getValue(r.URL.Path)
+		ctx = context.WithValue(ctx, paramsKey{}, ps)
 	}
 
-	if handler == nil {
+	if h == nil {
 		if s.notFoundHandler != nil {
 			s.notFoundHandler(w, r, fmt.Errorf("contextHandler not found"))
 		} else {
 			http.NotFoundHandler().ServeHTTP(w, r)
 		}
 	} else {
-		ctx = context.WithValue(ctx, paramsKey{}, params)
-		handler.ServeHTTP(w, r.WithContext(ctx))
+		ctx = context.WithValue(ctx, paramsKey{}, ps)
+		h.ServeHTTP(w, r.WithContext(ctx))
 	}
 }
 
