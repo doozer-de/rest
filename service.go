@@ -88,7 +88,7 @@ func (s *Service) Register(r []Register, baseURI string) error {
 		h := r.Handler
 
 		for i := len(s.chain) - 1; i >= 0; i-- {
-			h = s.chain[i](h).ServeHTTP
+			h = s.chain[i](h)
 		}
 
 		route := path.Join(baseURI, r.Path)
@@ -111,13 +111,13 @@ func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, p := range s.optionsChain {
-		p.ServeHTTP(w, r)
+		p(w, r)
 	}
 	if r.Method == http.MethodOptions {
 		return
 	}
 
-	var h http.Handler
+	var h http.HandlerFunc
 	var ps Params
 
 	n, ok := s.routes[r.Method]
@@ -135,7 +135,7 @@ func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		ctx = context.WithValue(ctx, paramsKey{}, ps)
-		h.ServeHTTP(w, r.WithContext(ctx))
+		h(w, r.WithContext(ctx))
 	}
 }
 
