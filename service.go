@@ -17,7 +17,7 @@ type paramsKey struct{}
 // Service implements a HTTP Router + Some Helpers for chaining and error handling. It is used for the GRPC-REST Gateway
 type Service struct {
 	routes          map[string]*node
-	optionsChain    []http.Handler
+	optionsChain    []http.HandlerFunc
 	chain           []Middleware
 	notFoundHandler ErrorHandler // The Route could not be found
 	errorHandler    ErrorHandler // Handle errors in general. We expected the DError and the data in the context
@@ -144,7 +144,7 @@ func GetParams(ctx context.Context) Params {
 }
 
 // Route registers a handler for certain http method/route
-func (s *Service) Route(method, uri string, handler http.Handler) error {
+func (s *Service) Route(method, uri string, handler http.HandlerFunc) error {
 	if n := s.routes[method]; n == nil {
 		s.routes[method] = &node{}
 	}
@@ -155,36 +155,36 @@ func (s *Service) Route(method, uri string, handler http.Handler) error {
 }
 
 // Get registers a handler for GET and the given uri
-func (s *Service) Get(uri string, handler http.Handler) {
+func (s *Service) Get(uri string, handler http.HandlerFunc) {
 	s.Route(http.MethodGet, uri, handler)
 }
 
 // Post registers a handler for POST and the given uri
-func (s *Service) Post(uri string, handler http.Handler) {
+func (s *Service) Post(uri string, handler http.HandlerFunc) {
 	s.Route(http.MethodPost, uri, handler)
 }
 
 // Put registers a handler for PUT and the given uri
-func (s *Service) Put(uri string, handler http.Handler) {
+func (s *Service) Put(uri string, handler http.HandlerFunc) {
 	s.Route(http.MethodPut, uri, handler)
 }
 
 // Delete registers a handler for DELETE and the given uri
-func (s *Service) Delete(uri string, handler http.Handler) {
+func (s *Service) Delete(uri string, handler http.HandlerFunc) {
 	s.Route(http.MethodDelete, uri, handler)
 }
 
 // Patch registers a handler for PATCH and the given uri
-func (s *Service) Patch(uri string, handler http.Handler) {
+func (s *Service) Patch(uri string, handler http.HandlerFunc) {
 	s.Route(http.MethodPatch, uri, handler)
 }
 
 // Head registers a handler for HEAD and the given uri
-func (s *Service) Head(uri string, handler http.Handler) {
+func (s *Service) Head(uri string, handler http.HandlerFunc) {
 	s.Route(http.MethodHead, uri, handler)
 }
 
 // Options registers a handler for OPTIONS and the given uri
-func (s *Service) Options(uri string, handler http.Handler) {
+func (s *Service) Options(uri string, handler http.HandlerFunc) {
 	s.Route(http.MethodOptions, uri, handler)
 }
