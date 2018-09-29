@@ -129,7 +129,7 @@ func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if h == nil {
 		if s.notFoundHandler != nil {
-			s.notFoundHandler(w, r, fmt.Errorf("contextHandler not found"))
+			s.notFoundHandler(w, r, fmt.Errorf("contextHandler for route %q not found", r.URL.Path))
 		} else {
 			http.NotFoundHandler().ServeHTTP(w, r)
 		}
