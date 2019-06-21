@@ -35,9 +35,7 @@ func (gr *HTTPHeaderGuardRecorder) Header() http.Header {
 	return gr.ResponseRecorder.Header()
 }
 
-func AHandler(w http.ResponseWriter, r *http.Request) {
-	return
-}
+func AHandler(w http.ResponseWriter, r *http.Request) {}
 
 func TestAllowAll(t *testing.T) {
 	recorder := httptest.NewRecorder()
@@ -47,7 +45,7 @@ func TestAllowAll(t *testing.T) {
 
 	s.ServeHTTP(recorder, r)
 
-	if recorder.HeaderMap.Get(headerAllowOrigin) != "*" {
+	if recorder.Result().Header.Get(headerAllowOrigin) != "*" {
 		t.Errorf("Allow-Origin header should be *")
 	}
 }
@@ -65,7 +63,7 @@ func TestAllowRegexMatch(t *testing.T) {
 	r.Header.Add("Origin", origin)
 	s.ServeHTTP(recorder, r)
 
-	headerValue := recorder.HeaderMap.Get(headerAllowOrigin)
+	headerValue := recorder.Result().Header.Get(headerAllowOrigin)
 	if headerValue != origin {
 		t.Errorf("Allow-Origin header should be %v, found %v", origin, headerValue)
 	}
@@ -85,7 +83,7 @@ func TestAllowRegexNoMatch(t *testing.T) {
 	r.Header.Add("Origin", origin)
 	s.ServeHTTP(recorder, r)
 
-	headerValue := recorder.HeaderMap.Get(headerAllowOrigin)
+	headerValue := recorder.Result().Header.Get(headerAllowOrigin)
 	if headerValue != "" {
 		t.Errorf("Allow-Origin header should not exist, found %v", headerValue)
 	}
@@ -107,11 +105,11 @@ func TestHeaders(t *testing.T) {
 	r, _ := http.NewRequest(http.MethodPut, "foo", nil)
 	s.ServeHTTP(recorder, r)
 
-	credentialsVal := recorder.HeaderMap.Get(headerAllowCredentials)
-	methodsVal := recorder.HeaderMap.Get(headerAllowMethods)
-	headersVal := recorder.HeaderMap.Get(headerAllowHeaders)
-	exposedHeadersVal := recorder.HeaderMap.Get(headerExposeHeaders)
-	maxAgeVal := recorder.HeaderMap.Get(headerMaxAge)
+	credentialsVal := recorder.Result().Header.Get(headerAllowCredentials)
+	methodsVal := recorder.Result().Header.Get(headerAllowMethods)
+	headersVal := recorder.Result().Header.Get(headerAllowHeaders)
+	exposedHeadersVal := recorder.Result().Header.Get(headerExposeHeaders)
+	maxAgeVal := recorder.Result().Header.Get(headerMaxAge)
 
 	if credentialsVal != "true" {
 		t.Errorf("Allow-Credentials is expected to be true, found %v", credentialsVal)
@@ -145,7 +143,7 @@ func TestDefaultAllowHeaders(t *testing.T) {
 	r, _ := http.NewRequest(http.MethodPut, "foo", nil)
 	s.ServeHTTP(recorder, r)
 
-	headersVal := recorder.HeaderMap.Get(headerAllowHeaders)
+	headersVal := recorder.Result().Header.Get(headerAllowHeaders)
 	if headersVal != "Origin,Accept,Content-Type,Authorization" {
 		t.Errorf("Allow-Headers is expected to be Origin,Accept,Content-Type,Authorization; found %v", headersVal)
 	}

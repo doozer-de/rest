@@ -590,7 +590,7 @@ func TestToBytes(t *testing.T) {
 				t.Fatalf("Got: %t - want: %t", ok, tc.ok)
 			}
 
-			if bytes.Compare(actual, tc.expected) != 0 {
+			if !bytes.Equal(actual, tc.expected) {
 				t.Fatalf("Got: %v - want: %v", actual, tc.expected)
 			}
 		})
