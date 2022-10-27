@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the "third_party_licenses/Go (golang)" file.
 
+//go:build go1.12
 // +build go1.12
 
 package rest

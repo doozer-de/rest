@@ -1,3 +1,3 @@
 module github.com/doozer-de/rest
 
-go 1.12
+go 1.19
